@@ -114,7 +114,6 @@ resource "aws_route_table" "PrivateRoute" {
   vpc_id = aws_vpc.main.id
   route {
     cidr_block = "0.0.0.0/0"
-    # gateway_id = aws_internet_gateway.InternetGateway.id
     nat_gateway_id = aws_nat_gateway.Natgateway.id
   }
   tags = {
@@ -166,14 +165,16 @@ resource "aws_instance" "EC2Instance" {
   key_name      = "dev"
   iam_instance_profile = "ec2role"
   vpc_security_group_ids = ["${aws_security_group.ec2_security_group.id}"]
-  user_data = <<EOF
+  user_data = <<-EOF
     #!/bin/bash
+    sudo su
     sudo yum update -y
-    sudo yum install httpd.x86_64 -y
-    echo "Hello World from dev" > /var/www/html/index.html
-    sudo systemctl start httpd.service
+    sudo yum install python3-pip git mysql -y
+    sudo git clone "https://github.com/Devsharma27/flask_test.git"
+    sudo pip3 install flask
+    cd /flask_test
+    python3 app.py
   EOF
-
   tags = {
     Name = "Dev"
   }
